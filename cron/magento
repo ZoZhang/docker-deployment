@@ -1,0 +1,3 @@
+* * * * * /usr/local/bin/php /var/www/prod/bin/magento cron:run >> /var/www/prod/var/log/crontab.log
+
+

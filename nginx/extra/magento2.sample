@@ -1,0 +1,38 @@
+# Example configuration:
+server {
+    listen 80;
+    server_name 127.0.0.1;
+    return 301 https://$host$request_uri;
+}
+
+server {
+	#listen       80;
+	listen       443 ssl http2;
+	server_name  127.0.0.1;
+	index  index.php index.htm index.html;
+		
+    #auth_basic "Vous devez vous authentifier";
+    #auth_basic_user_file /var/www/.htpasswd;
+
+	#add_header X-Content-Type-Options nosniff;
+	add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+	ssl_certificate /var/www/sslkey/fullchain_bundle.pem;
+	ssl_certificate_key /var/www/sslkey/fullchain_bundle.key;
+	ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
+
+	ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-RC4-SHA:!ECDHE-RSA-RC4-SHA:ECDH-ECDSA-RC4-SHA:ECDH-RSA-RC4-SHA:ECDHE-RSA-AES256-SHA:HIGH:!RC4-SHA:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!CBC:!EDH:!kEDH:!PSK:!SRP:!kECDH;
+
+	ssl_prefer_server_ciphers on;
+	ssl_session_cache shared:SSL:10m;
+	ssl_session_timeout 60m;
+
+	ssl_stapling on;
+	ssl_stapling_verify on;
+	ssl_trusted_certificate /var/www/sslkey/GandiStandardSSLCA2.pem;
+    
+    # Magento Vars
+	set $MAGE_ROOT /var/www/sample/;
+	set $MAGE_MODE default; # or production or developer
+    include /var/www/sample/nginx.conf.sample;
+}
