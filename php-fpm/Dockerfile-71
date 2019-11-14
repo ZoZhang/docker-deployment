@@ -20,6 +20,8 @@ RUN curl -sS https://getcomposer.org/installer | php -- \
 # Install PHP extensions deps
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
+        libkrb5-dev \
+        libc-client-dev \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
         libmcrypt-dev \
@@ -39,9 +41,10 @@ RUN apt-get update \
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && pecl install redis \
-    && pecl install memcached \
+    && pecl install redis memcached mailparse \
+    && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
     && docker-php-ext-install \
+            xml \
             exif \
             xsl \
             iconv \
@@ -54,12 +57,15 @@ RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-di
             soap \
             sockets \
             zip \
+            bcmath \
             pcntl \
             ftp \
+            imap \
     && docker-php-ext-enable \
             redis \
             memcached \
-            opcache
+            opcache \
+            mailparse 
 
 # Install APCu and APC backward compatibility
 RUN pecl install apcu \

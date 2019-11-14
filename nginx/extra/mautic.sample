@@ -1,0 +1,113 @@
+server {
+    listen 80;
+    server_name 127.0.0.1;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen       443 ssl http2;
+    server_name 127.0.0.1;
+    root /var/www/mautic;
+    index index.php index.html index.htm;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+    ssl_certificate /var/www/sslkey/fullchain_bundle.pem;
+    ssl_certificate_key /var/www/sslkey/fullchain_bundle.key;
+    ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
+
+    ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-RC4-SHA:!ECDHE-RSA-RC4-SHA:ECDH-ECDSA-RC4-SHA:ECDH-RSA-RC4-SHA:ECDHE-RSA-AES256-SHA:HIGH:!RC4-SHA:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!CBC:!EDH:!kEDH:!PSK:!SRP:!kECDH;
+
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 60m;
+
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    ssl_trusted_certificate /var/www/sslkey/GandiStandardSSLCA2.pem;
+    
+    ## MAUTIC CUSTOM DIRECTIVE SETTINGS ##
+	
+    # redirect index.php to root
+    rewrite ^/index.php/(.*) /$1  permanent;
+    
+    # redirect some entire folders
+    rewrite ^/(vendor|translations|build)/.* /index.php break;
+
+    location / {
+	# First attempt to serve request as file, then
+	# as directory, then fall back to index.html
+        # one option: try_files $uri $uri/ /index.php$is_args$args;
+        try_files $uri /index.php$is_args$args;
+		# Uncomment to enable naxsi on this location
+		# include /etc/nginx/naxsi.rules
+	}
+
+    # Deny everything else in /app folder except Assets folder in bundles
+    location ~ /app/bundles/.*/Assets/ {
+        allow all;
+        access_log off;
+    }
+
+    location ~ /app/ { deny all; }
+
+    ## Need modification, causing error 404
+    # Deny everything else in /addons or /plugins folder except Assets folder in bundles
+    #location ~ /(addons|plugins)/.*/Assets/ {
+    #    allow all;
+    #    access_log off;
+    #}
+    #location ~ /(addons|plugins)/ { deny all; }
+
+    # Deny all php files in themes folder
+    location ~* ^/themes/(.*)\.php {
+        deny all;
+    }
+
+    # Deny yml, twig, markdown, init file access
+    location ~* /(.*)\.(?:markdown|md|twig|yaml|yml|ht|htaccess|ini)$ {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # Deny all grunt, composer files
+    location ~* (Gruntfile|package|composer)\.(js|json)$ {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+    
+    ## END OF MAUTIC SETTINGS ##
+
+    location ~*  \.(jpg|jpeg|png|ico|pdf)$ {
+            expires 15d;
+    }
+
+    # Deny access to any files with a .php extension in the uploads directory
+    location ~* /(?:uploads|files)/.*\.php$ {
+            deny all;
+    }
+
+    # Solve email tracking pixel not found
+    location ~ email/(.*).gif {
+        try_files $uri /index.php?$args;
+    }
+
+    # Solve JS Loading 404 Error
+    location ~ (.*).js {
+        try_files $uri /index.php?$args;
+    }
+
+    ## pass the PHP scripts
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+	    fastcgi_pass   fastcgi_backend;
+	    fastcgi_read_timeout 600s;
+	    fastcgi_connect_timeout 600s;
+	    fastcgi_index  index.php;
+	    fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+	    include        fastcgi_params;
+    }
+}
