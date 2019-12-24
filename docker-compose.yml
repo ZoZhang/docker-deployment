@@ -2,23 +2,30 @@ version: '2'
 
 services:
 
+### Application Container #######################################
+
+    application:
+        build: 
+            context: ./application
+        volumes:
+           - ${TEMP_DIR}:/tmp/
+           - ${APPLICATION}:/var/www
+           - ${CRON_CONFIG_PATH}:/etc/cron.d/
+           - ${CRON_LOG_PATH}:/var/log/cron/
+
 ### PHP-FPM Container #######################################
 
     php-fpm:
         build:
             context: ./php-fpm
             dockerfile: Dockerfile-${PHP_VERSION}
-        volumes:
-            - ${APPLICATION}:/var/www
-            - ${WORKSPACE_TEMP_DIR}:/tmp/
-            - ${CRON_CONFIG_PATH}:/etc/cron.d/
-            - ${CRON_LOG_PATH}:/var/log/cron/
+        volumes:    
             - ./php-fpm/custom.ini:/usr/local/etc/php/conf.d/custom.ini
             - ./php-fpm/custom.conf:/usr/local/etc/php-fpm.d/www.conf
+        volumes_from:
+            - application
         expose:
             - "9000"
-        links:
-            - mariadb
 
 ### Nginx Server Container ##################################
 
@@ -30,7 +37,9 @@ services:
             - ./nginx/nginx.conf:/etc/nginx/nginx.conf
             - ./nginx/extra/:/etc/nginx/extra/
         volumes_from:
-            - php-fpm    
+            - application
+        depends_on:
+            - php-fpm      
         ports:
             - "${NGINX_HOST_HTTP_PORT}:80"
             - "${NGINX_HOST_HTTPS_PORT}:443"
@@ -49,17 +58,6 @@ services:
         ports:
             - "${MYSQL_PORT}:3306"
 
-    mysql:
-        build:
-            context: ./mysql
-        volumes:
-            - ${MYSQL_DATADIR}:/var/lib/mysql
-            - ${MYSQL_CONF}:/etc/mysql/conf.d/my.cnf
-            - ${MYSQL_HOST_LOG_PATH}:/var/log/mysql/
-        ports:
-            - "${MYSQL_PORT}:3306"
-
-
 ### Redis Container #########################################
 
     redis:
@@ -77,8 +75,6 @@ services:
             - memcached:/var/lib/memcached
         ports:
             - "${MEMCACHED_HOST_PORT}:11211"
-        links:
-            - php-fpm
 
 ### Elasticsearch Container #######################################
 
@@ -101,4 +97,5 @@ volumes:
         driver: "local"
     elasticsuite:
         driver: "local"
-
+    application:
+        driver: "local"
