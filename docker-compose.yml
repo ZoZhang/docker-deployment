@@ -5,6 +5,7 @@ services:
 ### Application Container #######################################
 
     application:
+        tty: true    
         build: 
             context: ./application
         volumes:
@@ -12,6 +13,7 @@ services:
            - ${APPLICATION}:/var/www
            - ${CRON_CONFIG_PATH}:/etc/cron.d/
            - ${CRON_LOG_PATH}:/var/log/cron/
+           - ./phpMyAdmin:/var/opt/phpMyAdmin
 
 ### PHP-FPM Container #######################################
 
@@ -39,7 +41,7 @@ services:
         volumes_from:
             - application
         depends_on:
-            - php-fpm      
+            - php-fpm    
         ports:
             - "${NGINX_HOST_HTTP_PORT}:80"
             - "${NGINX_HOST_HTTPS_PORT}:443"
@@ -51,6 +53,8 @@ services:
             context: ./mariadb
         #privileged: true
         user: mysql
+        environment:
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
         volumes:
             - ${MYSQL_DATADIR}:/var/lib/mysql
             #- ${MYSQL_CONF}:/etc/mysql/conf.d/my.cnf

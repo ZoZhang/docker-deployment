@@ -62,10 +62,12 @@ RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-di
             ftp \
             imap \
     && docker-php-ext-enable \
-            redis \
             memcached \
             opcache \
             mailparse 
+
+# Custom enable php ext
+RUN echo 'extension=redis.so' > /usr/local/etc/php/conf.d/docker-php-ext-redis.ini
 
 # Install APCu and APC backward compatibility
 RUN pecl install apcu \
@@ -77,7 +79,7 @@ RUN pecl install apcu \
 RUN wget https://phar.phpunit.de/phpunit.phar -O /usr/local/bin/phpunit \
     && chmod +x /usr/local/bin/phpunit
 
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* && usermod -u 1000 www-data
+RUN rm -rf /tmp/pear && apt-get clean && rm -rf /var/lib/apt/lists/* && usermod -u 1000 www-data
 
 WORKDIR /var/www
 
