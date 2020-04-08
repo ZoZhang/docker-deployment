@@ -1,0 +1,16 @@
+[Unit]
+Description=run web service on docker
+Documentation=
+After=docker.service
+Wants=network.target
+Requires=network.target
+  
+[Service]
+ExecStart=/opt/deployment/launch_web_service.sh
+ExecStop=
+ExecReload=/opt/deployment/launch_web_service.sh
+Type=simple
+  
+[Install]
+WantedBy=multi-user.target
+
