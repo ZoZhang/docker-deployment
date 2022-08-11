@@ -1,4 +1,4 @@
-FROM nginx:alpine
+FROM nginx:stable-alpine
 
 MAINTAINER ZoZhang <zo.zhang@gmail.com>
 
@@ -13,4 +13,4 @@ RUN apk update \
 
 CMD ["nginx"]
 
-EXPOSE 80 443 3308 
+EXPOSE 80 443 3308

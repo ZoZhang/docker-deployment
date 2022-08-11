@@ -6,7 +6,6 @@ server {
 }
 
 server {
-	#listen       80;
 	listen       443 ssl http2;
 	server_name  127.0.0.1;
 	index  index.php index.htm index.html;
@@ -27,9 +26,9 @@ server {
 	ssl_session_cache shared:SSL:10m;
 	ssl_session_timeout 60m;
 
-	ssl_stapling on;
-	ssl_stapling_verify on;
-	ssl_trusted_certificate /var/www/sslkey/GandiStandardSSLCA2.pem;
+	#ssl_stapling on;
+	#ssl_stapling_verify on;
+	#ssl_trusted_certificate /var/www/sslkey/GandiStandardSSLCA2.pem;
     
     # Magento Vars
 	set $MAGE_ROOT /var/www/sample/;

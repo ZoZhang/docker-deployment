@@ -22,6 +22,7 @@ services:
             context: ./php-fpm
             dockerfile: Dockerfile-${PHP_VERSION}
         volumes:    
+            - ./php-fpm/swoole_loader.so:/usr/local/swoole_loader.so
             - ./php-fpm/custom.ini:/usr/local/etc/php/conf.d/custom.ini
             - ./php-fpm/custom.conf:/usr/local/etc/php-fpm.d/www.conf
         volumes_from:
@@ -57,7 +58,7 @@ services:
             - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
         volumes:
             - ${MYSQL_DATADIR}:/var/lib/mysql
-            #- ${MYSQL_CONF}:/etc/mysql/conf.d/my.cnf
+            - ${MYSQL_CONF}:/etc/mysql/my.cnf
             - ${MYSQL_HOST_LOG_PATH}:/var/log/mysql/
         ports:
             - "${MYSQL_PORT}:3306"
