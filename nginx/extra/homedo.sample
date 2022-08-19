@@ -1,7 +1,7 @@
 server
 {
     listen       80;
-    server_name  homedo.test;
+    server_name  homedo.zozhang.local;
     index index.html index.htm index.php;
     
     if ($request_uri ~ (.+?\.php)(|/.+)$ ){ 
