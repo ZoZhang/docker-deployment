@@ -22,8 +22,10 @@ services:
             dockerfile: Dockerfile-${PHP_VERSION}
         volumes:    
             - ${LICENSE_ECSHOPX}:/opt/ecshopx/license.zl
-            - ./php-fpm/ecshopx.ini:/usr/local/etc/php/conf.d/ecshopx.ini
-            - ./php-fpm/custom.conf:/usr/local/etc/php-fpm.d/ecshopx.conf
+            - ./php-fpm/conf/php-fpm.conf:/usr/local/etc/php-fpm.conf
+            - ./php-fpm/extra/ecshopx.ini:/usr/local/etc/php/conf.d/ecshopx.ini
+            - ./php-fpm/extra/ecshopx.conf:/usr/local/etc/extra/ecshopx.conf
+            - "socket:/var/run"
         volumes_from:
             - application
 
@@ -38,14 +40,13 @@ services:
             - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
             - ./nginx/conf/fastcgi_params:/etc/nginx/fastcgi_params
             - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
+            - "socket:/var/run"
         volumes_from:
             - application 
-
         depends_on:
            - redis 
            - mariadb
            - php-fpm
-
         ports:
             - "8011:80"
             - "4311:443"
@@ -97,6 +98,7 @@ services:
 ### Volumes Setup ###########################################
 
 volumes:
+    socket:
     nginx:
         driver: "local"    
     mariadb:
@@ -109,3 +111,6 @@ volumes:
         driver: "local"
     application:
         driver: "local"
+
+
+
