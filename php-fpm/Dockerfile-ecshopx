@@ -3,6 +3,8 @@ FROM registry.cn-hangzhou.aliyuncs.com/shopex_company/ecshopex-php:7.4-fpm-alpin
 RUN apk --no-cache add ca-certificates tzdata \
         --repository https://mirrors.aliyun.com/alpine/v3.9/main/ && apk upgrade && apk add python3 && python3 -m ensurepip && python3 -m pip install supervisor -i https://mirrors.aliyun.com/pypi/simple
 
+WORKDIR /var/www/
+
 CMD ["php-fpm","-F"]
 
 #RUN php composer.phar config repo.packagist composer https://mirrors.aliyun.com/composer/ \
